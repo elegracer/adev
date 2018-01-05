@@ -1,3 +1,5 @@
+#include <cassert>
+
 #include <array>
 #include <cmath>
 #include <fstream>
@@ -30,18 +32,17 @@ const double pi = 3.14159265358979;
 namespace fs = experimental::filesystem;
 
 int main(int argc, char* argv[]) {
+  assert(argc > 2);
   vector<imu_reading> imus;
   vector<pair<imu_reading, double>> imu_stddev;
   string path = argv[1];
-  bool sliding_window = false;
-  if (argc > 2)
-    sliding_window = std::stoi(argv[2]);
+  string sensor = argv[2];
 
   /************************************************************
    * load files
    ************************************************************/
 
-  regex rex(".*gyro_([0-9]+)-([0-9]+)-([0-9]+) ([0-9]+):([0-9]+):([0-9]+)\\.txt");
+  regex rex(".*" + sensor + "_([0-9]+)-([0-9]+)-([0-9]+) ([0-9]+):([0-9]+):([0-9]+)\\.txt");
   smatch match;
 
   list<pair<string, string>> files;
@@ -72,11 +73,8 @@ int main(int argc, char* argv[]) {
       istringstream iss(line);
       auto& imu = imus.emplace_back();
       size_t i = 0;
-      for (double v = 0; iss >> v;) {
-        imu.push_back(v);
-        ++i;
-      }
-      if (i < imus.front().size()) {
+      for (double v = 0; iss >> v; imu[i++] = v);
+      if (i < imus[0].size()) {
         imus.pop_back();
         break;
       }
@@ -97,20 +95,16 @@ int main(int argc, char* argv[]) {
    * start the computation
    ************************************************************/
 
-  vector<double> taus;
-  for (double tau = 0.1; tau < pow(10, 5); tau *= 1.1) {
-    if (sliding_window && imus[imus.size() - 2][0] - imus[0][0] < tau)
-      break;
-    else if (!sliding_window && imus[imus.size() / 2][0] - imus[0][0] < tau)
-      break;
-    taus.push_back(tau);
-  }
+  vector<pair<size_t, double>> taus;
+  double real_tau = (imus.back()[0] - imus.front()[0]) / (imus.size() - 1);
+  for (size_t bucket_size = 10; bucket_size * 2 <= imus.size(); bucket_size = (int)(bucket_size * 1.1))
+    taus.emplace_back(bucket_size, bucket_size * real_tau);
 
   for (size_t i = 0; i < taus.size();) {
     vector<thread> workers;
     size_t threads = thread::hardware_concurrency();
     for (size_t j = 0; j < threads && i < taus.size(); ++j, ++i)
-      workers.emplace_back(standard_deviation, imus, taus[i], sliding_window, &imu_stddev);
+      workers.emplace_back(standard_deviation, imus, taus[i].first, taus[i].second, &imu_stddev);
     for (auto& t : workers)
       t.join();
   }
@@ -119,7 +113,7 @@ int main(int argc, char* argv[]) {
    * draw plot
    ************************************************************/
 
-  vector<vector<array<double, 3>>> allan_data(imus.front().size() - 1);
+  vector<vector<array<double, 3>>> allan_data(imus[0].size() - 1);
   for (auto& p : imu_stddev)
     for (size_t i = 1; i <= allan_data.size(); ++i)
       allan_data[i - 1].push_back({{p.first[0], p.first[i], p.first[i] / sqrt(p.second + 1)}});
@@ -160,7 +154,7 @@ int main(int argc, char* argv[]) {
   }
 
   plot.command("set terminal qt enhanced");
-  plot.command("set title 'Noise Analysis'");
+  plot.command("set title '" + sensor + " noise analysis'");
   plot.command("set ylabel 'ADEV'");
   plot.command("set xlabel 'tau'");
   plot.command("set logscale xy");
