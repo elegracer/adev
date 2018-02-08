@@ -1,0 +1,9 @@
+# Gyroscope (XYZ都比较准)
+Real frequency: 1.001198e+02Hz
+Continuous white noise density: 1.336045058e-04 1.260209403e-04 8.829520378e-05
+Continuous random walk density: 1.533236829e-06 8.915214207e-07 1.344361582e-06
+
+# Accelerometer (XY比较准)
+Real frequency: 1.001198e+02Hz
+Continuous white noise density: 5.600230162e-04 5.714853983e-04 5.657012592e-04
+Continuous random walk density: 9.154812506e-06 8.672943918e-06 8.790071302e-05

@@ -6,14 +6,11 @@
 #include <iomanip>
 #include <iostream>
 #include <list>
-#include <regex>
 #include <sstream>
 #include <string>
 #include <thread>
 #include <utility>
 #include <vector>
-
-#include <experimental/filesystem>
 
 #include "RANSAC.h"
 
@@ -24,40 +21,24 @@ using namespace allan;
 
 namespace {
 
-const double g = 9.81;
-const double pi = 3.14159265358979;
+constexpr double g = 9.805;
+constexpr double pi = 3.14159265358979;
 
 }
-
-namespace fs = experimental::filesystem;
 
 int main(int argc, char* argv[]) {
   assert(argc > 2);
   vector<imu_reading> imus;
   vector<pair<imu_reading, double>> imu_stddev;
-  string path = argv[1];
+  string filename = argv[1];
   string sensor = argv[2];
+  size_t jump_header = 0;
+  if (argc > 3)
+    jump_header = stoi(argv[3]);
 
   /************************************************************
    * load files
    ************************************************************/
-
-  regex rex(".*" + sensor + "_([0-9]+)-([0-9]+)-([0-9]+) ([0-9]+):([0-9]+):([0-9]+)\\.txt");
-  smatch match;
-
-  list<pair<string, string>> files;
-  for (auto& p: fs::directory_iterator(path)) {
-    string filename = p.path().string();
-    if (!regex_match(filename, match, rex))
-      continue;
-
-    string fid = string(match[1]) + string(match[2]) + string(match[3]) +
-                 string(match[4]) + string(match[5]) + string(match[6]);
-
-    auto it = files.begin();
-    for (; it != files.end() && it->first < fid; ++it);
-    files.insert(it, make_pair(fid, filename));
-  }
 
   cout << "\nReading IMU files ...\n";
 
@@ -65,23 +46,27 @@ int main(int argc, char* argv[]) {
   TIMER_BEG(t_loading);
 #endif
 
-  for (auto& file : files) {
-    cout << "  [" << file.first << "] \"" << file.second << "\"\n";
-    ifstream ifs(file.second);
-    string line;
-    while (getline(ifs, line)) {
-      istringstream iss(line);
-      auto& imu = imus.emplace_back();
-      size_t i = 0;
-      for (double v = 0; iss >> v; imu[i++] = v);
-      if (i < imus[0].size()) {
-        imus.pop_back();
-        break;
-      }
-      imu[0] /= 1e9;
-    }
-    ifs.close();
+  cout << "\"" << filename << "\"\n";
+  ifstream ifs(filename);
+  string line;
+  while (jump_header) {
+    getline(ifs, line);
+    --jump_header;
   }
+  while (getline(ifs, line)) {
+    istringstream iss(line);
+    auto& imu = imus.emplace_back();
+    size_t i = 0;
+    for (double v = 0; iss >> v; imu[i++] = v);
+    if (sensor == "acce")
+      for (size_t j = 1; j < imu.size(); ++j)
+        imu[j] *= g;
+    if (i < imus[0].size()) {
+      imus.pop_back();
+      break;
+    }
+  }
+  ifs.close();
 
 #ifdef TIMER
   TIMER_END(t_loading, "loading");
