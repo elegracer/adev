@@ -1,0 +1,11 @@
+GYROSCOPE
+
+Real frequency: 4.089311e+02Hz
+Continuous white noise density: 5.449751301e-05 6.194518423e-05 6.982238859e-05
+Continuous random walk density: 5.983373876e-06 3.487072482e-06 4.377694638e-06
+
+ACCELEROMETER
+
+Real frequency: 4.089311e+02Hz
+Continuous white noise density: 8.195494758e-04 8.069811774e-04 8.628464417e-04
+Continuous random walk density: 1.418021242e-04 1.907789521e-04 1.171634606e-03
