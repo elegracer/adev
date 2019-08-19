@@ -34,7 +34,9 @@ class UniformNoise : protected _RandomBase {
 public:
     typedef T value_type;
 
-    UniformNoise(value_type left = value_type(0.0), value_type right = value_type(1.0)) : distribution(left, right) {}
+    UniformNoise(value_type left = value_type(0.0), value_type right = value_type(1.0)) :
+        distribution(left, right) {
+    }
 
     value_type next() {
         return distribution(engine);
@@ -49,11 +51,14 @@ class GaussianNoise : protected _RandomBase {
 public:
     typedef T value_type;
 
-    GaussianNoise(value_type sigma = value_type(1.0), value_type mean = value_type(0.0)) : distribution(mean, sigma) {}
+    GaussianNoise(value_type sigma = value_type(1.0), value_type mean = value_type(0.0)) :
+        distribution(mean, sigma) {
+    }
 
     value_type next() {
         return distribution(engine);
     }
+
 private:
     std::normal_distribution<value_type> distribution;
 };
@@ -64,7 +69,9 @@ public:
     typedef T value_type;
 
     // [left, right]
-    UniformInteger(value_type left = value_type(0), value_type right = std::numeric_limits<T>::max()) : distribution(left, right) {}
+    UniformInteger(value_type left = value_type(0), value_type right = std::numeric_limits<T>::max()) :
+        distribution(left, right) {
+    }
 
     void param(value_type left, value_type right) {
         distribution.param(std::uniform_int_distribution<value_type>::param_type(left, right));
@@ -77,13 +84,15 @@ public:
     value_type next(value_type left, value_type right) {
         return distribution(engine, typename std::uniform_int_distribution<value_type>::param_type(left, right));
     }
+
 private:
     std::uniform_int_distribution<value_type> distribution;
 };
 
 class LotBox {
 public:
-    LotBox(size_t size) : cap(0), lots(size) {
+    LotBox(size_t size) :
+        cap(0), lots(size) {
         std::iota(lots.begin(), lots.end(), 0);
     }
 
@@ -99,12 +108,10 @@ public:
             size_t result = lots[cap];
             cap++;
             return result;
-        }
-        else if (remaining() == 1) {
+        } else if (remaining() == 1) {
             cap++;
             return lots.back();
-        }
-        else {
+        } else {
             return size_t(-1); // Hey we have nothing left!
         }
     }
@@ -112,8 +119,7 @@ public:
     void refill_last(size_t n = 1) {
         if (cap > n) {
             cap -= n;
-        }
-        else {
+        } else {
             cap = 0;
         }
     }
@@ -132,11 +138,13 @@ private:
     UniformInteger<size_t> dice;
 };
 
-template<typename T>
+template <typename T>
 class WhiteNoise {
 public:
     typedef T value_type;
-    WhiteNoise(value_type sigma, value_type freq = 1, value_type mean = 0) : n(sigma, mean), isdt(sqrt(freq)) {}
+    WhiteNoise(value_type sigma, value_type freq = 1, value_type mean = 0) :
+        n(sigma, mean), isdt(sqrt(freq)) {
+    }
 
     void seed() {
         n.seed();
@@ -147,7 +155,7 @@ public:
     }
 
     value_type next() {
-        return n.next()*isdt;
+        return n.next() * isdt;
     }
 
 private:
@@ -155,12 +163,14 @@ private:
     double isdt;
 };
 
-template<typename T>
+template <typename T>
 class RandomWalk {
 public:
     typedef T value_type;
 
-    RandomWalk(value_type sigma, value_type freq = 1, value_type init = 0, value_type bias = 0) : v(init), n(sigma, bias), sdt(sqrt(1/freq)) {}
+    RandomWalk(value_type sigma, value_type freq = 1, value_type init = 0, value_type bias = 0) :
+        v(init), n(sigma, bias), sdt(sqrt(1 / freq)) {
+    }
 
     void seed() {
         n.seed();
@@ -181,7 +191,7 @@ public:
 
 private:
     void step() {
-        v += n.next()*sdt;
+        v += n.next() * sdt;
     }
 
     double v;

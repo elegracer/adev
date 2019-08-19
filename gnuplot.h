@@ -5,14 +5,15 @@
 #include <string>
 #include <vector>
 
-class gnuplot
-{
+class gnuplot {
 public:
     virtual ~gnuplot() {
         close();
     }
 
-    bool is_opened() const { return m_pipe != nullptr; }
+    bool is_opened() const {
+        return m_pipe != nullptr;
+    }
 
     void open() {
         close();
@@ -34,9 +35,9 @@ public:
     }
 
 private:
-    FILE* m_pipe = nullptr;
+    FILE *m_pipe = nullptr;
 
-    static FILE* gp_popen(const char *command, const char *mode) {
+    static FILE *gp_popen(const char *command, const char *mode) {
         return popen(command, mode);
     }
 
