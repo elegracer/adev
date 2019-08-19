@@ -19,6 +19,8 @@
 
 #include "allan_deviation.h"
 
+#include "imu_data.h"
+
 using namespace std;
 using namespace allan;
 
@@ -38,50 +40,16 @@ int main(int argc, char* argv[]) {
   string path = argv[1];
   string sensor = argv[2];
 
-  /************************************************************
-   * load files
-   ************************************************************/
-
-  regex rex(".*" + sensor + "_([0-9]+)-([0-9]+)-([0-9]+) ([0-9]+):([0-9]+):([0-9]+)\\.txt");
-  smatch match;
-
-  list<pair<string, string>> files;
-  for (auto& p: fs::directory_iterator(path)) {
-    string filename = p.path().string();
-    if (!regex_match(filename, match, rex))
-      continue;
-
-    string fid = string(match[1]) + string(match[2]) + string(match[3]) +
-                 string(match[4]) + string(match[5]) + string(match[6]);
-
-    auto it = files.begin();
-    for (; it != files.end() && it->first < fid; ++it);
-    files.insert(it, make_pair(fid, filename));
-  }
-
   cout << "\nReading IMU files ...\n";
 
 #ifdef TIMER
   TIMER_BEG(t_loading);
 #endif
 
-  for (auto& file : files) {
-    cout << "  [" << file.first << "] \"" << file.second << "\"\n";
-    ifstream ifs(file.second);
-    string line;
-    while (getline(ifs, line)) {
-      istringstream iss(line);
-      auto& imu = imus.emplace_back();
-      size_t i = 0;
-      for (double v = 0; iss >> v; imu[i++] = v);
-      if (i < imus[0].size()) {
-        imus.pop_back();
-        break;
-      }
-      imu[0] /= 1e9;
-    }
-    ifs.close();
-  }
+  ImuCsv imucsv;
+  imucsv.load(path);
+
+  imus = imucsv.items;
 
 #ifdef TIMER
   TIMER_END(t_loading, "loading");
