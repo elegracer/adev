@@ -94,7 +94,7 @@ int main(int argc, char *argv[]) {
         ransac<white_noise>(wmodel, allan_data[i], 0.99);
         ransac<random_walk>(rwmodel, allan_data[i], 0.99);
         cwns[i] = std::pow(10, wmodel.m_noise);
-        crws[i] = std::pow(10, rwmodel.m_noise);
+        crws[i] = std::pow(10, rwmodel.m_noise) * std::sqrt(3);
     }
 
     std::cout << std::setprecision(6)
