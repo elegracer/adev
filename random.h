@@ -180,7 +180,7 @@ public:
         n.seed(value);
     }
 
-    void init(const value_type &v) {
+    void init(const value_type& v) {
         this->v = v;
     }
 

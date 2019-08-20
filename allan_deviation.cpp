@@ -25,7 +25,7 @@ constexpr double pi = 3.14159265358979;
 
 } // namespace
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
     assert(argc > 2);
     std::string path = argv[1];
     std::string sensor = argv[2];
@@ -66,7 +66,7 @@ int main(int argc, char *argv[]) {
         for (size_t j = 0; j < threads && i < taus.size(); ++j, ++i) {
             workers.emplace_back(standard_deviation, imus, taus[i].first, taus[i].second, &imu_stddev);
         }
-        for (auto &t : workers) {
+        for (auto& t : workers) {
             t.join();
         }
     }
@@ -75,7 +75,7 @@ int main(int argc, char *argv[]) {
      *  draw plot
      */
     std::vector<std::vector<std::array<double, 3>>> allan_data(imus[0].size() - 1); // size: 3
-    for (auto &p : imu_stddev) {
+    for (auto& p : imu_stddev) {
         // p.first[0]: tau
         // p.first[1..3]: stddev
         // p.second: bucket_size

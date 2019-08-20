@@ -27,7 +27,7 @@ public:
         }
     }
 
-    void command(const std::string &cmd) {
+    void command(const std::string& cmd) {
         if (is_opened() && !cmd.empty()) {
             fprintf(m_pipe, "%s\n", cmd.c_str());
             fflush(m_pipe);
@@ -35,13 +35,13 @@ public:
     }
 
 private:
-    FILE *m_pipe = nullptr;
+    FILE* m_pipe = nullptr;
 
-    static FILE *gp_popen(const char *command, const char *mode) {
+    static FILE* gp_popen(const char* command, const char* mode) {
         return popen(command, mode);
     }
 
-    static int gp_pclose(FILE *pipe) {
+    static int gp_pclose(FILE* pipe) {
         return pclose(pipe);
     }
 };

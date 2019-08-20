@@ -32,8 +32,8 @@ class white_noise {
 public:
     typedef std::array<double, 3> point_type;
 
-    bool fit(const std::vector<point_type> &pts,
-             const std::vector<unsigned char> &inlier_mask) {
+    bool fit(const std::vector<point_type>& pts,
+             const std::vector<unsigned char>& inlier_mask) {
         double new_noise = 0.0;
         size_t count = 0;
         for (size_t i = 0; i < inlier_mask.size(); ++i) {
@@ -47,7 +47,7 @@ public:
         return true;
     }
 
-    bool consensus(const point_type &pt) {
+    bool consensus(const point_type& pt) {
         return std::abs(std::pow(10.0, m_noise - std::log10(pt[0]) * 0.5) - pt[1]) <= m_err;
     }
 
@@ -61,8 +61,8 @@ class random_walk {
 public:
     typedef std::array<double, 3> point_type;
 
-    bool fit(const std::vector<point_type> &pts,
-             const std::vector<unsigned char> &inlier_mask) {
+    bool fit(const std::vector<point_type>& pts,
+             const std::vector<unsigned char>& inlier_mask) {
         double new_noise = 0.0;
         size_t count = 0;
         for (size_t i = 0; i < inlier_mask.size(); ++i) {
@@ -76,7 +76,7 @@ public:
         return true;
     }
 
-    bool consensus(const point_type &pt) {
+    bool consensus(const point_type& pt) {
         return std::abs(std::pow(10.0, m_noise + std::log10(pt[0]) * 0.5) - pt[1]) <= m_err;
     }
 
@@ -86,10 +86,10 @@ public:
     double m_noise;
 };
 
-void standard_deviation(const std::vector<imu_reading> &imus,
+void standard_deviation(const std::vector<imu_reading>& imus,
                         const size_t bucket_size,
                         const double tau,
-                        std::vector<std::pair<imu_reading, double>> *imu_stddev) {
+                        std::vector<std::pair<imu_reading, double>>* imu_stddev) {
 #ifdef TIMER
     TIMER_BEG(t_tau);
 #endif
@@ -102,11 +102,11 @@ void standard_deviation(const std::vector<imu_reading> &imus,
 
     // compute the mean values of every bucket
     for (size_t bucket_id = 0; bucket_id * bucket_size + bucket_size <= imus.size(); ++bucket_id) {
-        auto &mean = avg_of_buckets.emplace_back();
+        auto& mean = avg_of_buckets.emplace_back();
         mean[0] = imus[bucket_id * bucket_size + 1][0] - imus[bucket_id * bucket_size][0];
         mean[0] *= bucket_size;
         for (size_t i = 0; i < bucket_size; ++i) {
-            const auto &imu = imus[bucket_id * bucket_size + i];
+            const auto& imu = imus[bucket_id * bucket_size + i];
             for (size_t j = 1; j < mean.size(); ++j) {
                 mean[j] += imu[j];
             }
